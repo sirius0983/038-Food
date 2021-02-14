@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let target = event.target
         if (target && target.classList.contains('tabheader__item')) {
             tabs.forEach((item, i) => {
-                if (target == item) {
+                if (target === item) {
                     hideTabContent()
                     showTabContent(i)
                 }
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //Timer
 
-    let deadline = '2021-02-13'
+    let deadline = '2021-02-15'
 
     function getTimeRemaining(endtime) {
         let t = Date.parse(endtime) - Date.parse(new Date()),
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', openModal)
     })
 
-    function openModal () {
+    function openModal() {
         modal.classList.add('show')
         modal.classList.remove('hide')
         document.body.style.overflow = 'hidden'
@@ -125,9 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    let modalTimerID = setTimeout(openModal, 5000)
+    // let modalTimerID = setTimeout(openModal, 5000)
 
-    function showModalByScroll () {
+    function showModalByScroll() {
         if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
             openModal()
             window.removeEventListener('scroll', showModalByScroll)
@@ -135,5 +135,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('scroll', showModalByScroll)
+
+    // Использование классов для карточек
+
+    class MenuCard {
+        constructor(src, alt, title, descr, price, parentSelector, ...classes) {
+            this.src = src;
+            this.alt = alt;
+            this.title = title;
+            this.descr = descr;
+            this.price = price;
+            this.classes = classes;
+            this.parent = document.querySelector(parentSelector);
+            this.tranfer = 75;
+            this.changeToRUB();
+        }
+
+        changeToRUB() {
+            this.price = this.price * this.tranfer
+        }
+
+        render() {
+            let element = document.createElement('div');
+
+            if (this.classes.length === 0) {
+                this.element = 'menu__item'
+                element.classList.add(this.element)
+            } else {
+                this.classes.forEach(className => element.classList.add(className))
+            }
+
+            element.innerHTML = `                
+                    <img src=${this.src} alt=${this.alt}>
+                    <h3 class="menu__item-subtitle">${this.title}</h3>
+                    <div class="menu__item-descr">${this.descr}</div>
+                    <div class="menu__item-divider"></div>
+                    <div class="menu__item-price">
+                        <div class="menu__item-cost">Цена:</div>
+                        <div class="menu__item-total"><span>${this.price}</span> руб/день</div>
+                    </div>`
+            this.parent.append(element)
+        }
+    }
+
+    new MenuCard(
+        "img/tabs/vegy.jpg",
+        "vegy",
+        'Меню "Фитнес"',
+        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
+        30,
+        '.menu .container',
+        'menu__item', 'big'
+    ).render()
+
+    new MenuCard(
+        "img/tabs/elite.jpg",
+        "elite",
+        'Меню “Премиум”',
+        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в "ресторан!"',
+        40,
+        '.menu .container',
+        'menu__item'
+    ).render()
+
+    new MenuCard(
+        "img/tabs/post.jpg",
+        "post",
+        'Меню "Постное"',
+        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
+        20,
+        '.menu .container',
+        'menu__item'
+    ).render()
 
 });
