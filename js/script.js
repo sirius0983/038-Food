@@ -220,34 +220,50 @@ document.addEventListener('DOMContentLoaded', () => {
     function postData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault()
-            let request = new XMLHttpRequest(),
-                statusMessage = document.createElement('img')
+            let statusMessage = document.createElement('img')
             statusMessage.src = message.loading
             statusMessage.style.cssText = `
                 display: block;
                 margin: 0 auto;`
+
             form.insertAdjacentElement('afterend', statusMessage)
-            request.open('POST', 'server.php')
-            request.setRequestHeader('Content-type', 'application/json')
+
             let formData = new FormData(form)
             let obj = {}
             formData.forEach(function (value, key) {
                 obj[key] = value
             })
-            let json = JSON.stringify(obj)
-            request.send(json)
-            request.addEventListener('load', () => {
-                if (request.status === 200) {
-                    console.log(request.response)
+
+            fetch('server.php', {
+                method: "POST",
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(obj)
+            }).then(data => data.text())
+                .then(data => {
+                    console.log(data)
                     showThanksModal(message.success)
-                    form.reset()
                     statusMessage.remove()
-                } else {
-                    showThanksModal(message.failure)
-                }
+                }).catch(() => {
+                showThanksModal(message.failure)
+            }).finally(() => {
+                form.reset()
             })
+
+            // request.addEventListener('load', () => {
+            //     if (request.status === 200) {
+            //         console.log(request.response)
+            //         showThanksModal(message.success)
+            //         form.reset()
+            //         statusMessage.remove()
+            //     } else {
+            //         showThanksModal(message.failure)
+            //     }
+            // })
         })
     }
+
     function showThanksModal(message) {
         let prevModalDialog = document.querySelector('.modal__dialog')
         prevModalDialog.classList.add('hide')
@@ -268,4 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal()
         }, 4000)
     }
+
+
 });
