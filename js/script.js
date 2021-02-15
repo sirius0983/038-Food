@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //Timer
 
-    let deadline = '2021-02-15'
+    let deadline = '2021-02-16'
 
     function getTimeRemaining(endtime) {
         let t = Date.parse(endtime) - Date.parse(new Date()),
@@ -207,5 +207,49 @@ document.addEventListener('DOMContentLoaded', () => {
         '.menu .container',
         'menu__item'
     ).render()
+
+    // Forms
+
+    let forms = document.querySelectorAll('form'),
+        message = {
+            loading: 'Загрузка',
+            success: 'Спасибо! Скоро с Вами свяжемся.',
+            failure: 'Что-то пошло не так...'
+        }
+    forms.forEach(item => {
+        postData(item)
+    })
+
+    function postData(form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+            let request = new XMLHttpRequest(),
+                statusMessage = document.createElement('div')
+            statusMessage.classList.add('status')
+            statusMessage.textContent = message.loading
+            form.append(statusMessage)
+            request.open('POST', 'server.php')
+            request.setRequestHeader('Content-type', 'application/json')
+            let formData = new FormData(form)
+            let obj = {}
+            formData.forEach(function (value, key) {
+                obj[key] = value
+            })
+            let json = JSON.stringify(obj)
+            request.send(json)
+            request.addEventListener('load', () => {
+                if (request.status === 200) {
+                    console.log(request.response)
+                    statusMessage.textContent = message.success
+                    form.reset()
+                    setTimeout(() => {
+                        statusMessage.remove()
+                    }, 2000)
+                } else {
+                    statusMessage.textContent = message.failure
+                }
+            })
+        })
+    }
 
 });
