@@ -175,37 +175,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    new MenuCard(
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        30,
-        '.menu .container',
-        'menu__item', 'big'
-    ).render()
+    let getResource = async (url) => {
+        let res = await fetch(url)
+        if (!res.ok) {
+            throw new Error(`Could not fetch ${url}, status: ${res.status}`)
+        }
+        return await res.json()
+    }
 
-    new MenuCard(
-        "img/tabs/elite.jpg",
-        "elite",
-        'Меню “Премиум”',
-        'В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в "ресторан!"',
-        40,
-        '.menu .container',
-        'menu__item'
-    ).render()
+    getResource('http://localhost:3000/menu')
+        .then(data => {
+            data.forEach(({img, altimg, title, descr, price}) => {
+                new MenuCard(img, altimg, title, descr, price, '.menu .container').render()
+            })
+        })
 
-    new MenuCard(
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное"',
-        'Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.',
-        20,
-        '.menu .container',
-        'menu__item'
-    ).render()
-
-    // Forms
+   // Forms
 
     let forms = document.querySelectorAll('form'),
         message = {
@@ -214,10 +199,21 @@ document.addEventListener('DOMContentLoaded', () => {
             failure: 'Что-то пошло не так...'
         }
     forms.forEach(item => {
-        postData(item)
+        bindPostData(item)
     })
 
-    function postData(form) {
+    let postData = async (url, data) => {
+        let res = await fetch(url, {
+            method: "POST",
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: data
+        })
+        return await res.json()
+    }
+
+    function bindPostData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault()
             let statusMessage = document.createElement('img')
@@ -229,18 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
             form.insertAdjacentElement('afterend', statusMessage)
 
             let formData = new FormData(form)
-            let obj = {}
-            formData.forEach(function (value, key) {
-                obj[key] = value
-            })
+            let json = JSON.stringify(Object.fromEntries(formData.entries()))
 
-            fetch('server.php', {
-                method: "POST",
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify(obj)
-            }).then(data => data.text())
+             postData('http://localhost:3000/requests', json)
                 .then(data => {
                     console.log(data)
                     showThanksModal(message.success)
@@ -250,17 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }).finally(() => {
                 form.reset()
             })
-
-            // request.addEventListener('load', () => {
-            //     if (request.status === 200) {
-            //         console.log(request.response)
-            //         showThanksModal(message.success)
-            //         form.reset()
-            //         statusMessage.remove()
-            //     } else {
-            //         showThanksModal(message.failure)
-            //     }
-            // })
         })
     }
 
@@ -284,6 +260,10 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal()
         }, 4000)
     }
+
+    fetch('http://localhost:3000/menu')
+        .then(data => data.json())
+        .then(res => console.log(res))
 
 
 });
